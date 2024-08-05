@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+        <GATEWAY_HOST>http://localhost:5010/</GATEWAY_HOST>
+        <USE_PARALLEL_TEST_FRAMEWORK>true</USE_PARALLEL_TEST_FRAMEWORK>
+        <USE_FEATURED_TEST_FRAMEWORK>true</USE_FEATURED_TEST_FRAMEWORK>
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>
