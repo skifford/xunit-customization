@@ -5,7 +5,7 @@ using Xunit;
 
 namespace WeatherForecast.Api.TestFramework.Fixtures;
 
-public abstract class FixtureBase : IAsyncLifetime, IFixture, IFeatureToggleFixture
+public abstract class FixtureBase : IAsyncLifetime, IFeatureToggleFixture
 {
     public ApiFacade Api { get; }
 
@@ -31,31 +31,19 @@ public abstract class FixtureBase : IAsyncLifetime, IFixture, IFeatureToggleFixt
         return Task.WhenAll(tasks);
     }
 
-    /// <summary>
-    /// Не переопределять и не реализовывать в производных классах. <br />
-    /// Необходимо использовать <seealso cref="FixtureInitializeAsync"/>
-    /// </summary>
     Task IAsyncLifetime.InitializeAsync()
     {
-        return SingleExecuteAsync(async () => await FixtureInitializeAsync(), (IFixture)this);
-    }
+        // Ваша логика инициализации разделяемого контекста
+        // ...
 
-    /// <summary>
-    /// Не переопределять и не реализовывать в производных классах. <br />
-    /// Необходимо использовать <seealso cref="FixtureDisposeAsync"/>
-    /// </summary>
-    async Task IAsyncLifetime.DisposeAsync()
-    {
-        await SingleExecuteAsync(async () => await FixtureDisposeAsync(), (IFixture)this);
-    }
-
-    protected virtual Task FixtureInitializeAsync()
-    {
         return Task.CompletedTask;
     }
 
-    protected virtual Task FixtureDisposeAsync()
+    Task IAsyncLifetime.DisposeAsync()
     {
+        // Ваша логика освобождение разделяемого контекста
+        // ...
+
         return Task.CompletedTask;
     }
 
@@ -64,27 +52,5 @@ public abstract class FixtureBase : IAsyncLifetime, IFixture, IFeatureToggleFixt
         return string.IsNullOrWhiteSpace(featureToggle)
             ? Task.CompletedTask
             : Api.Features.SetState(featureToggle, state);
-    }
-
-    private static async Task SingleExecuteAsync<TFixture>(Func<Task> func, TFixture fixture) where TFixture : IFixture
-    {
-        if (ApiTestsSettings.UseParallelTestFramework)
-        {
-            await ParallelFixtureRunner.WaitAsync(fixture, async () =>
-            {
-                if (FixturesManager.ContainsFixture(fixture))
-                {
-                    return;
-                }
-
-                await func.Invoke();
-
-                FixturesManager.AddFixture(fixture);
-            });
-        }
-        else
-        {
-            await func.Invoke();
-        }
     }
 }

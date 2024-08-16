@@ -11,8 +11,6 @@ internal sealed class CustomTestFrameworkExecutor(
     IMessageSink diagnosticMessageSink)
     : XunitTestFrameworkExecutor(assemblyName, sourceInformationProvider, diagnosticMessageSink)
 {
-    private Dictionary<bool, List<IXunitTestCase>> _testCasesByParallelization;
-    private Dictionary<string, bool> _parallelizationByTestCaseId;
     private Dictionary<string, List<IXunitTestCase>> _testCasesByFeatureToggle;
     private Dictionary<string, List<string>> _featureTogglesByTestCaseId;
     private Dictionary<string, TestCollection> _testCollectionByFeatureToggles;
@@ -42,16 +40,12 @@ internal sealed class CustomTestFrameworkExecutor(
     {
         var result = new List<IXunitTestCase>(testCases.Count);
 
-        InitializeDictionaries(testCases.Count);
-        EnrichDictionaries(testCases);
+        InitializeDictionaries(testCases);
 
         foreach (var testCase in testCases)
         {
             var testCollectionId = Guid.NewGuid();
             var testCaseId = testCase.UniqueID;
-
-            var isParallelized = _parallelizationByTestCaseId[testCaseId] &&
-                                 ApiTestsSettings.UseParallelTestFramework;
 
             var isFeatured = _featureTogglesByTestCaseId[testCaseId].Count != 0 &&
                              ApiTestsSettings.UseFeaturedTestFramework;
@@ -62,16 +56,7 @@ internal sealed class CustomTestFrameworkExecutor(
                 {
                     if (HasFeatureToggleDefaultState(featureToggle))
                     {
-                        if (isParallelized)
-                        {
-                            result.Add(RecreateTestCaseWithTestCollection(
-                                testCase: testCase,
-                                testCollectionId: testCollectionId));
-                        }
-                        else
-                        {
-                            result.Add(testCase);
-                        }
+                        result.Add(testCase);
                     }
                     else
                     {
@@ -84,16 +69,7 @@ internal sealed class CustomTestFrameworkExecutor(
             }
             else
             {
-                if (isParallelized)
-                {
-                    result.Add(RecreateTestCaseWithTestCollection(
-                        testCase: testCase,
-                        testCollectionId: testCollectionId));
-                }
-                else
-                {
-                    result.Add(testCase);
-                }
+                result.Add(testCase);
             }
         }
 
@@ -105,39 +81,16 @@ internal sealed class CustomTestFrameworkExecutor(
         }
     }
 
-    private void InitializeDictionaries(int capacity)
+    private void InitializeDictionaries(IReadOnlyCollection<IXunitTestCase> testCases)
     {
-        _testCasesByParallelization = new Dictionary<bool, List<IXunitTestCase>>(2)
-        {
-            { true, new List<IXunitTestCase>(capacity) },
-            { false, new List<IXunitTestCase>(capacity) }
-        };
-        _parallelizationByTestCaseId = new Dictionary<string, bool>(capacity);
-        _testCasesByFeatureToggle = new Dictionary<string, List<IXunitTestCase>>(capacity);
-        _featureTogglesByTestCaseId = new Dictionary<string, List<string>>(capacity);
-        _testCollectionByFeatureToggles = new Dictionary<string, TestCollection>(capacity);
-    }
+        _testCasesByFeatureToggle = new Dictionary<string, List<IXunitTestCase>>(testCases.Count);
+        _featureTogglesByTestCaseId = new Dictionary<string, List<string>>(testCases.Count);
+        _testCollectionByFeatureToggles = new Dictionary<string, TestCollection>(testCases.Count);
 
-    private void EnrichDictionaries(IEnumerable<IXunitTestCase> testCases)
-    {
         foreach (var testCase in testCases)
         {
-            EnrichTestCasesByParallelization(testCase);
             EnrichTestCasesAndFeatures(testCase);
         }
-
-        EnrichParallelizationByTestCaseIds();
-    }
-
-    private void EnrichTestCasesByParallelization(IXunitTestCase testCase)
-    {
-        var parallelAttribute = testCase.TestMethod.TestClass.Class
-            .GetCustomAttributes(typeof(ParallelAttribute))
-            .FirstOrDefault();
-
-        var isParallel = parallelAttribute is not null;
-
-        _testCasesByParallelization[isParallel].Add(testCase);
     }
 
     private void EnrichTestCasesAndFeatures(IXunitTestCase testCase)
@@ -160,17 +113,6 @@ internal sealed class CustomTestFrameworkExecutor(
             else
             {
                 _testCasesByFeatureToggle[featureToggle] = [testCase];
-            }
-        }
-    }
-
-    private void EnrichParallelizationByTestCaseIds()
-    {
-        foreach (var key in _testCasesByParallelization.Keys)
-        {
-            foreach (var testCase in _testCasesByParallelization[key])
-            {
-                _parallelizationByTestCaseId.TryAdd(testCase.UniqueID, key);
             }
         }
     }
@@ -245,7 +187,7 @@ internal sealed class CustomTestFrameworkExecutor(
                 testMethod: newTestMethod,
                 testMethodArguments: xunitTestCase.TestMethodArguments),
 
-            // Если Вы используете кастомные атрибуты, то добавьте их обработку ниже
+            // Если Вы используете кастомные атрибуты (кроме Fact и Theory), то добавьте их обработку ниже
 
             _ => throw new ArgumentOutOfRangeException("Test case " + testCase.GetType() + " not supported")
         };

@@ -3,7 +3,6 @@ namespace WeatherForecast.Api.TestFramework.Infrastructure;
 public static class ApiTestsSettings
 {
     private static Uri _gatewayHost;
-    private static bool? _useParallelTestFramework;
     private static bool? _useFeaturedTestFramework;
 
     public static Uri GatewayHost
@@ -17,20 +16,6 @@ public static class ApiTestsSettings
             });
 
             return _gatewayHost;
-        }
-    }
-
-    public static bool UseParallelTestFramework
-    {
-        get
-        {
-            _useParallelTestFramework ??= GetValue(EnvironmentVariables.UseParallelTestFramework, value =>
-            {
-                var success = bool.TryParse(value, out var result);
-                return (success, result);
-            });
-
-            return _useParallelTestFramework.Value;
         }
     }
 

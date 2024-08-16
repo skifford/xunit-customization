@@ -14,7 +14,7 @@ internal sealed class CustomTestFramework : XunitTestFramework
 
     protected override ITestFrameworkExecutor CreateExecutor(AssemblyName assemblyName)
     {
-        return ApiTestsSettings.UseParallelTestFramework || ApiTestsSettings.UseFeaturedTestFramework
+        return ApiTestsSettings.UseFeaturedTestFramework
             ? new CustomTestFrameworkExecutor(assemblyName, SourceInformationProvider, DiagnosticMessageSink)
             : base.CreateExecutor(assemblyName);
     }

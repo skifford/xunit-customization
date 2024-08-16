@@ -1,5 +1,4 @@
 using WeatherForecast.Api.TestFramework.Extensions;
-using WeatherForecast.Api.TestFramework.Fixtures;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -43,13 +42,11 @@ internal sealed class CustomTestClassRunner(
 
             foreach (var fixture in ClassFixtureMappings.Values)
             {
-                var currentFixture = (IFixture)fixture; // для ref
-                FixturesManager.SetActualFixture(ref currentFixture);
-                currentFixture.SetFeatureToggles(_featureToggles);
-                await currentFixture.EnableFeatureToggles();
+                fixture.SetFeatureToggles(_featureToggles);
+                await fixture.EnableFeatureToggles();
 
                 Console.WriteLine(
-                    $"For fixture '{currentFixture}' " +
+                    $"For fixture '{fixture}' " +
                     $"toggles '{GetToggleNames()}' activated " +
                     $"in '{TestClass.TestCollection.CollectionDefinition.Name}' collection");
             }
@@ -62,12 +59,10 @@ internal sealed class CustomTestClassRunner(
         {
             foreach (var fixture in ClassFixtureMappings.Values)
             {
-                var currentFixture = (IFixture)fixture; // для ref
-                FixturesManager.SetActualFixture(ref currentFixture);
-                await currentFixture.DisableFeatureToggles();
+                await fixture.DisableFeatureToggles();
 
                 Console.WriteLine(
-                    $"For fixture '{currentFixture}' " +
+                    $"For fixture '{fixture}' " +
                     $"all toggles deactivated in '{TestClass.TestCollection.CollectionDefinition.Name}' collection\n");
             }
         }

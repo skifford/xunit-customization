@@ -1,5 +1,4 @@
 using WeatherForecast.Api.TestFramework;
-using WeatherForecast.Api.TestFramework.Fixtures;
 using WeatherForecast.Api.TestFramework.Infrastructure;
 using Xunit;
 
@@ -7,18 +6,10 @@ using Xunit;
 
 namespace WeatherForecast.Api.Tests;
 
-[Trait(Traits.Category, Traits.Categories.Parallel)]
-[Parallel]
 [Collection(nameof(WeatherForecastFixture))]
-public sealed class WeatherForecastTests
+public sealed class WeatherForecastTests(WeatherForecastFixture fixture)
 {
-    private readonly ApiFacade _api;
-
-    public WeatherForecastTests(WeatherForecastFixture fixture)
-    {
-        FixturesManager.SetActualFixture(ref fixture);
-        _api = fixture.Api;
-    }
+    private readonly ApiFacade _api = fixture.Api;
 
     /// <summary>
     /// Тест будет запускаться дважды: без фичей и с активированной фичей 'WeatherStation'
