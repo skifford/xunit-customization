@@ -33,7 +33,6 @@ public sealed class WeatherForecastTests(WeatherForecastFixture fixture)
     /// Тест будет запускаться без фичей
     /// </summary>
     [Fact]
-    [FeatureToggle(FeatureToggles.Off)]
     public async Task DefaultToday_ValidModel_Ok()
     {
         // Arrange

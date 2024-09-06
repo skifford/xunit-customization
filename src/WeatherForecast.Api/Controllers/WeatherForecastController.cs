@@ -15,7 +15,6 @@ public sealed class WeatherForecastController(IWeatherForecastProvider weatherFo
     /// <summary>
     /// Состояние фичи 'WeatherStation' НЕ ВЛИЯЕТ на работу роута: в ответе будет краткое сообщение о погоде.
     /// </summary>
-    /// <returns></returns>
     [HttpGet("Summary")]
     [ProducesResponseType((int)HttpStatusCode.OK, Type = typeof(SummaryView))]
     public Task<SummaryView> GetSummary()
@@ -24,7 +23,7 @@ public sealed class WeatherForecastController(IWeatherForecastProvider weatherFo
     }
 
     /// <summary>
-    /// Роут для работы только с НЕ активированой фичей 'WeatherStation':
+    /// Роут для работы только с НЕактивированой фичей 'WeatherStation':
     /// <br/> Если фича 'WeatherStation' НЕ активирована, то в ответе будет прогноз погоды по умолчанию.
     /// <br/> Если фича 'WeatherStation' АКТИВИРОВАНА, то будет ошибка 405.
     /// </summary>

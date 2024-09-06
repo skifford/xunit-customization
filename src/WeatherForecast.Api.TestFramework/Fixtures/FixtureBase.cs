@@ -41,7 +41,7 @@ public abstract class FixtureBase : IAsyncLifetime, IFeatureToggleFixture
 
     Task IAsyncLifetime.DisposeAsync()
     {
-        // Ваша логика освобождение разделяемого контекста
+        // Ваша логика освобождения разделяемого контекста
         // ...
 
         return Task.CompletedTask;
